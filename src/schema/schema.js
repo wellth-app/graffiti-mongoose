@@ -103,7 +103,7 @@ function getConnectionField(graffitiModel, type, hooks = {}) {
   };
 }
 
-function getMutationField(graffitiModel, type, viewer, hooks = {}) {
+function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDMutation) {
   const {name} = type;
   const {mutation} = hooks;
 
@@ -125,7 +125,7 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}) {
 
     if (field.type instanceof GraphQLList && field.type.ofType instanceof GraphQLObjectType) {
       // TODO support objects nested in lists
-    } else if (!(field.type instanceof GraphQLObjectType) && field.name !== 'id' && !field.name.startsWith('_')) {
+    } else if (!(field.type instanceof GraphQLObjectType) && field.name !== 'id' && field.name !== '__v' && (allowMongoIDMutation || field.name !== '_id')) {
       inputFields[field.name] = field;
     }
 
@@ -208,7 +208,7 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}) {
  * @param  {{Object, Boolean}} {hooks, mutation}
  * @return {Object}
  */
-function getFields(graffitiModels, {hooks = {}, mutation = true} = {}) {
+function getFields(graffitiModels, {hooks = {}, mutation = true, allowMongoIDMutation = false} = {}) {
   const types = type.getTypes(graffitiModels);
   const {viewer, singular} = hooks;
 
@@ -241,7 +241,7 @@ function getFields(graffitiModels, {hooks = {}, mutation = true} = {}) {
       },
       mutations: {
         ...mutations,
-        ...getMutationField(graffitiModel, type, viewerField, hooks)
+        ...getMutationField(graffitiModel, type, viewerField, hooks, allowMongoIDMutation)
       }
     };
   }, {
