@@ -125,7 +125,9 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
 
     if (field.type instanceof GraphQLList && field.type.ofType instanceof GraphQLObjectType) {
       // TODO support objects nested in lists
-    } else if (!(field.type instanceof GraphQLObjectType) && field.name !== 'id' && field.name !== '__v' && (allowMongoIDMutation || field.name !== '_id')) {
+    } else if (!(field.type instanceof GraphQLObjectType)
+        && field.name !== 'id' && field.name !== '__v'
+        && (allowMongoIDMutation || field.name !== '_id')) {
       inputFields[field.name] = field;
     }
 
@@ -205,10 +207,13 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
 /**
  * Returns query and mutation root fields
  * @param  {Array} graffitiModels
- * @param  {{Object, Boolean}} {hooks, mutation}
+ * @param  {{Object, Boolean}} {hooks, mutation, allowMongoIDMutation}
  * @return {Object}
  */
-function getFields(graffitiModels, {hooks = {}, mutation = true, allowMongoIDMutation = false} = {}) {
+function getFields(graffitiModels, {
+    hooks = {}, mutation = true, allowMongoIDMutation = false,
+    customQueries = {}, customMutations = {}
+  } = {}) {
   const types = type.getTypes(graffitiModels);
   const {viewer, singular} = hooks;
 
@@ -245,8 +250,8 @@ function getFields(graffitiModels, {hooks = {}, mutation = true, allowMongoIDMut
       }
     };
   }, {
-    queries: {},
-    mutations: {}
+    queries: customQueries,
+    mutations: customMutations
   });
 
   const RootQuery = new GraphQLObjectType({
