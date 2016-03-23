@@ -38,7 +38,11 @@ export default class Middleware {
         if (!result.length) {
           result = args;
         }
-        lastResult = result[0];
+        if (result.length === 1) {
+          lastResult = result[0];
+        } else {
+          lastResult = result;
+        }
         await mw.call(this, ...result);
       };
       return async function composed(...result) {
