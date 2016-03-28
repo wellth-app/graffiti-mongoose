@@ -151,6 +151,13 @@ function getArguments(type, args = {}) {
       args[field.name] = field;
     }
 
+    if (field.type instanceof GraphQLObjectType) {
+      args[field.name] = {
+        name: field.name,
+        type: new GraphQLList(GraphQLID)
+      };
+    }
+
     return args;
   }, {
     ...args,
