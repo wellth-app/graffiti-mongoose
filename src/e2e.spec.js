@@ -244,6 +244,37 @@ describe('e2e', () => {
         });
       });
 
+      it('should get data from database and filter by array of mother\'s _id(s)', async function Test() {
+        const result = await graphql(schema, `{
+          users(mother: ["${motherUser._id}"]) {
+            _id
+          }
+        }`);
+
+        expect(result).to.be.eql({
+          data: {
+            users: [{
+              _id: user2._id.toString()
+            }]
+          }
+        });
+      });
+
+      it('should get data from database and filter by array of bad mother\'s _id(s)', async function Test() {
+        const badMotherId = `${motherUser._id}`.replace(/[0-9]/, 'a');
+        const result = await graphql(schema, `{
+          users(mother: ["${badMotherId}"]) {
+            _id
+          }
+        }`);
+
+        expect(result).to.be.eql({
+          data: {
+            users: []
+          }
+        });
+      });
+
       it('should support viewer field', async function Test() {
         const result = await graphql(schema, `{
           viewer {
@@ -290,6 +321,28 @@ describe('e2e', () => {
 
         expect(users.edges).to.containSubset([
           {node: {name: 'Foo'}}
+        ]);
+      });
+
+      it('should filter connections by GraphQLID arguments', async function Test() {
+        const result = await graphql(schema, `{
+          viewer {
+            users(mother: ["${motherUser._id}"]) {
+              count
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }`);
+
+        const {users} = result.data.viewer;
+        expect(users.count).to.be.eql(1);
+
+        expect(users.edges).to.containSubset([
+          {node: {name: 'Bar'}}
         ]);
       });
 
