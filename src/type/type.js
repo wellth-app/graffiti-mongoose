@@ -350,6 +350,7 @@ export {
   GraphQLViewer,
   GraphQLDate,
   GraphQLGeneric,
+  GraphQLBuffer,
   getType,
   getTypes,
   addType,
