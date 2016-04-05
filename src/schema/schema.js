@@ -212,9 +212,9 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
  */
 function getFields(graffitiModels, {
     hooks = {}, mutation = true, allowMongoIDMutation = false,
-    customQueries = {}, customMutations = {}
+    customQueries = {}, customMutations = {}, rebuildCache = true
   } = {}) {
-  const types = type.getTypes(graffitiModels);
+  const types = type.getTypes(graffitiModels, rebuildCache);
   const {viewer, singular} = hooks;
 
   const viewerFields = reduce(types, (fields, type, key) => {
