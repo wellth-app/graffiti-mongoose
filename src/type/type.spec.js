@@ -219,6 +219,20 @@ describe('type', () => {
   });
 
   describe('getTypes', () => {
+    it('should fail to resolve the sister reference if using e2e tests\' cached types', () => {
+      const result = getTypes([user], false);
+      const userType = result[user.name];
+      const fields = userType._typeConfig.fields();
+
+      expect(fields.mother.type).to.be.equal(userType);
+      expect(fields.sub.type._fields.subsub.type._fields.sister).to.be.not.ok; //eslint-disable-line
+      expect(fields.subArray.type.ofType._typeConfig.fields().brother.type).to.be.equal(userType);
+
+      // connection type
+      const nodeField = fields.friends.type._typeConfig.fields().edges.type.ofType._typeConfig.fields().node;
+      expect(nodeField.type).to.be.equal(userType);
+    });
+
     it('should resolve the references', () => {
       const result = getTypes([user]);
       const userType = result[user.name];
