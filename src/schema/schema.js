@@ -117,7 +117,7 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
           name: field.name,
           type: new GraphQLList(GraphQLID)
         };
-      } else if (field.type.mongooseEmbedded) {
+      } else if (field.type.mongooseEmbedded || field.type.mongooseNested) {
         inputFields[field.name] = {
           name: field.name,
           type: createInputObject(field.type)
