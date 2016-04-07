@@ -31,6 +31,8 @@ import {
 import query from './../query';
 import {addHooks} from '../utils';
 import viewerInstance from '../model/viewer';
+import {toCollectionName} from 'mongoose/lib/utils';
+import createInputObject from '../type/custom/to-input-object';
 
 const idField = {
   name: 'id',
@@ -56,7 +58,7 @@ function getSingularQueryField(graffitiModel, type, hooks = {}) {
 function getPluralQueryField(graffitiModel, type, hooks = {}) {
   const {name} = type;
   const {plural} = hooks;
-  const pluralName = `${name.toLowerCase()}s`;
+  const pluralName = toCollectionName(name);
 
   return {
     [pluralName]: {
@@ -86,7 +88,7 @@ function getQueryField(graffitiModel, type, hooks) {
 function getConnectionField(graffitiModel, type, hooks = {}) {
   const {name} = type;
   const {plural} = hooks;
-  const pluralName = `${name.toLowerCase()}s`;
+  const pluralName = toCollectionName(name.toLowerCase());
   const {connectionType} = connectionDefinitions({name, nodeType: type, connectionFields: {
     count: {
       name: 'count',
@@ -115,6 +117,11 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
           name: field.name,
           type: new GraphQLList(GraphQLID)
         };
+      } else if (field.type.mongooseEmbedded) {
+        inputFields[field.name] = {
+          name: field.name,
+          type: createInputObject(field.type)
+        };
       } else {
         inputFields[field.name] = {
           name: field.name,
@@ -124,7 +131,10 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
     }
 
     if (field.type instanceof GraphQLList && field.type.ofType instanceof GraphQLObjectType) {
-      // TODO support objects nested in lists
+      inputFields[field.name] = {
+        name: field.name,
+        type: new GraphQLList(createInputObject(field.type.ofType))
+      };
     } else if (!(field.type instanceof GraphQLObjectType)
         && field.name !== 'id' && !field.name.startsWith('__')
         && (allowMongoIDMutation || field.name !== '_id')) {

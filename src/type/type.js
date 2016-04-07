@@ -82,6 +82,20 @@ function stringToGraphQLType(type) {
 }
 
 /**
+ * Returns a GraphQL Enum type based on a List of Strings
+ * @param  {Array} list
+ * @param  {String} name
+ * @return {Object}
+ */
+function listToGraphQLEnumType(list, name) {
+  const values = reduce(list, (values, val) => {
+    values[val] = {value: val};
+    return values;
+  }, {});
+  return new GraphQLEnumType({ name, values });
+}
+
+/**
  * Extracts the fields of a GraphQL type
  * @param  {GraphQLType} type
  * @return {Object}
@@ -193,7 +207,7 @@ const resolveReference = {};
  * @param  {Boolean} root
  * @return {GraphQLObjectType}
  */
-export default function getType(graffitiModels, {name, description, fields}, path = [], rootType = null) {
+function getType(graffitiModels, {name, description, fields}, path = [], rootType = null) {
   const root = path.length === 0;
   const graphQLType = {name, description};
   rootType = rootType || graphQLType;
@@ -201,7 +215,8 @@ export default function getType(graffitiModels, {name, description, fields}, pat
   // These references have to be resolved when all type definitions are avaiable
   resolveReference[graphQLType.name] = resolveReference[graphQLType.name] || {};
   const graphQLTypeFields = reduce(fields, (graphQLFields,
-      {name, description, type, subtype, reference, nonNull, hidden, hooks, fields: subfields}, key) => {
+      {name, description, type, subtype, reference, nonNull, hidden, hooks,
+       fields: subfields, embeddedModel, enumValues}, key) => {
     name = name || key;
     const newPath = [...path, name];
 
@@ -236,6 +251,15 @@ export default function getType(graffitiModels, {name, description, fields}, pat
       const fields = subfields;
       const nestedObjectName = getTypeFieldName(graphQLType.name, name);
       graphQLField.type = getType(graffitiModels, {name: nestedObjectName, description, fields}, newPath, rootType);
+      graphQLField.type.mongooseEmbedded = true;
+    } else if (type === 'Embedded') {
+      const type = types.hasOwnProperty(name)
+        ? types[name]
+        : getType(graffitiModels, embeddedModel, ['embedded']);
+      type.mongooseEmbedded = true;
+      graphQLField.type = type;
+    } else if (enumValues && type === 'String') {
+      graphQLField.type = listToGraphQLEnumType(enumValues, getTypeFieldName(graphQLType.name, `${name}Enum`));
     } else {
       graphQLField.type = stringToGraphQLType(type);
     }
@@ -246,7 +270,7 @@ export default function getType(graffitiModels, {name, description, fields}, pat
         type: reference,
         resolve: addHooks((rootValue, args, info) => {
           const resolver = getOneResolver(graffitiModels[reference]);
-          return resolver(rootValue, {id: rootValue[name].toString()}, info);
+          return resolver(rootValue, {id: rootValue[name] ? rootValue[name].toString() : null}, info);
         }, hooks)
       };
     }
@@ -357,6 +381,8 @@ function getTypes(graffitiModels, rebuildCache = true) {
 
   return types;
 }
+
+export default getType;
 
 export default {
   getTypes
