@@ -251,7 +251,7 @@ function getType(graffitiModels, {name, description, fields}, path = [], rootTyp
       const fields = subfields;
       const nestedObjectName = getTypeFieldName(graphQLType.name, name);
       graphQLField.type = getType(graffitiModels, {name: nestedObjectName, description, fields}, newPath, rootType);
-      graphQLField.type.mongooseEmbedded = true;
+      graphQLField.type.mongooseNested = true;
     } else if (type === 'Embedded') {
       const type = types.hasOwnProperty(name)
         ? types[name]
