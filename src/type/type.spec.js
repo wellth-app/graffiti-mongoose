@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+import {forEach} from 'lodash';
 import {
   GraphQLString,
   GraphQLFloat,
@@ -12,7 +13,8 @@ import {
   GraphQLDate,
   GraphQLGeneric,
   getType,
-  getTypes
+  getTypes,
+  getArguments
 } from './';
 
 describe('type', () => {
@@ -215,6 +217,19 @@ describe('type', () => {
       const result = getType([], user);
       const fields = result._typeConfig.fields();
       expect(fields.hidden).to.be.eql(undefined);
+    });
+  });
+
+  describe('getArguments', () => {
+    it('should include operator variants in arguments', () => {
+      const type = getType([], user);
+      const result = getArguments(type);
+      forEach(['weight', 'createdAt', 'removed', 'nums'], (fieldName) => {
+        forEach(['GT', 'GTE', 'LT', 'LTE', 'NE'], (operator) => {
+          const variant = `${fieldName}_${operator}`;
+          expect(result[variant]).to.be.ok; // eslint-disable-line
+        });
+      });
     });
   });
 

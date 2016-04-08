@@ -165,8 +165,13 @@ function getArguments(type, args = {}) {
       field.type = field.type.ofType;
     }
 
-    if (field.type instanceof GraphQLScalarType) {
+    if (field.type instanceof GraphQLScalarType ||
+        (field.type instanceof GraphQLList
+          && field.type.ofType instanceof GraphQLScalarType)) {
       args[field.name] = field;
+      forEach(['GT', 'GTE', 'LT', 'LTE', 'NE'], (operator) => {
+        args[`${field.name}_${operator}`] = field;
+      });
     }
 
     if (field.type instanceof GraphQLObjectType) {
