@@ -110,6 +110,37 @@ function getList(Collection, selector, options = {}, info = null) {
     };
   }
 
+  if (selector) {
+    forEach(selector, (arg, key) => {
+      if (typeof key === 'string') {
+        const matches = key.match(/(.+)_(GTE|LTE|GT|LT|NE)$/);
+        if (matches) {
+          const field = matches[1];
+          const operator = matches[2];
+          delete selector[key];
+          switch (operator) {
+          case 'GT':
+            selector[field] = { $gt: arg };
+            break;
+          case 'LT':
+            selector[field] = { $lt: arg };
+            break;
+          case 'GTE':
+            selector[field] = { $gte: arg };
+            break;
+          case 'LTE':
+            selector[field] = { $lte: arg };
+            break;
+          case 'NE':
+            selector[field] = { $ne: arg };
+            break;
+          default: throw new Error(`Unsupported input argument operator "${operator}" in ${key}`);
+          }
+        }
+      }
+    });
+  }
+
   const projection = getFieldList(info);
   return Collection.find(selector, projection, options).then((result) => (
     result.map((value) => ({
