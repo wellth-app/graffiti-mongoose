@@ -69,7 +69,7 @@ function extractPath(schemaPath) {
   return reduceRight(subs, (field, sub, key) => {
     const obj = {};
 
-    if (schemaPath instanceof mongoose.Schema.Types.DocumentArray) {
+    if (schemaPath instanceof mongoose.Schema.Types.DocumentArray && key === (subs.length - 1)) {
       const subSchemaPaths = schemaPath.schema.paths;
       const fields = extractPaths(subSchemaPaths, {name: sub}); // eslint-disable-line no-use-before-define
       obj[sub] = {
