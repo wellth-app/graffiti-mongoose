@@ -322,10 +322,21 @@ async function connectionFromModel(graffitiModel, args, info) {
     selector._id.$lt = end;
   }
 
+  let sort = orderBy;
+
+  if (last) {
+    // must not modify orderBy object in place, as it may be a reusable enum
+    const newSort = {};
+    forEach(orderBy, (val, key) => {
+      newSort[key] = val > 0 ? -1 : 1;
+    });
+    sort = newSort;
+  }
+
   const result = await getList(Collection, selector, {
     limit,
     skip: offset,
-    sort: orderBy
+    sort
   }, info);
   const count = await getCount(Collection, selector);
 

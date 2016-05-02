@@ -429,6 +429,25 @@ describe('e2e', () => {
         ]);
       });
 
+      it('should be able to limit the ordered results in reverse', async function Test() {
+        const result = await graphql(schema, `{
+          viewer {
+            users(orderBy: NAME_DESC, last: 2) {
+              edges {
+                node {
+                  name
+                }
+              }
+            }
+          }
+        }`);
+
+        expect(result.data.viewer.users.edges).to.be.eql([
+          { node: { name: 'Bar' } },
+          { node: { name: 'Foo' } }
+        ]);
+      });
+
       it('should be able to paginate the ordered results', async function Test() {
         let result = await graphql(schema, `{
           viewer {
