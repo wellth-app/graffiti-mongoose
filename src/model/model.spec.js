@@ -98,4 +98,27 @@ describe('model', () => {
       }
     });
   });
+
+  it('should properly extract enumeration values', () => {
+    const treeChunk = extractPath({
+      path: 'foo',
+      instance: 'Array',
+      caster: {
+        enumValues: ['bar', 'baz'],
+        instance: 'String'
+      }
+    }, {
+      name: 'User'
+    });
+
+    expect(treeChunk).to.containSubset({
+      foo: {
+        name: 'foo',
+        nonNull: false,
+        type: 'Array',
+        subtype: 'String',
+        enumValues: ['bar', 'baz']
+      }
+    });
+  });
 });

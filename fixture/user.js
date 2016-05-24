@@ -24,6 +24,7 @@ const UserSchema = new mongoose.Schema({
   removed: Boolean,
   nums: [Number],
   strings: [String],
+  enumerations: [{ type: String, enum: ['a', 'b', 'c'] }],
   bools: {
     type: [Boolean],
     hooks: {

@@ -39,6 +39,11 @@ describe('type', () => {
           subtype: 'ObjectID',
           reference: 'User'
         },
+        enumerations: {
+          type: 'Array',
+          subtype: 'String',
+          enumValues: ['a', 'b', 'c']
+        },
         weight: {
           type: 'Number'
         },
@@ -122,6 +127,27 @@ describe('type', () => {
     it('should specify the fields', () => {
       const result = getType([], user);
       const fields = result._typeConfig.fields();
+      expect(fields.enumerations).to.containSubset({
+        name: 'enumerations',
+        type: {
+          ofType: {
+            _enumConfig: {
+              name: 'UserEnumerationsEnum',
+              values: {
+                a: { //eslint-disable-line
+                  value: 'a'
+                },
+                b: { //eslint-disable-line
+                  value: 'b'
+                },
+                c: { //eslint-disable-line
+                  value: 'c'
+                }
+              }
+            }
+          }
+        }
+      });
       expect(fields).to.containSubset({
         name: {
           name: 'name',

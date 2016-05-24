@@ -40,11 +40,15 @@ function getField(schemaPath) {
   if (schemaPath.caster) {
     const {
       instance,
-      options
+      options,
+      enumValues
     } = schemaPath.caster;
     const {ref} = options || {};
 
     field.subtype = instance;
+    if (enumValues && enumValues.length > 0) {
+      field.enumValues = enumValues;
+    }
 
     // ObjectID ref
     if (ref) {
