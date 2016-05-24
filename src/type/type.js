@@ -239,7 +239,10 @@ function getType(graffitiModels, {name, description, fields}, path = [], rootTyp
         graphQLField.type = new GraphQLList(
           getType(graffitiModels, {name: nestedObjectName, description, fields}, newPath, rootType));
       } else {
-        graphQLField.type = new GraphQLList(stringToGraphQLType(subtype));
+        const graphQLSubType = (enumValues && subtype === 'String') ?
+          listToGraphQLEnumType(enumValues, getTypeFieldName(graphQLType.name, `${name}Enum`))
+          : stringToGraphQLType(subtype);
+        graphQLField.type = new GraphQLList(graphQLSubType);
         if (reference) {
           resolveReference[rootType.name][name] = {
             name,
