@@ -222,7 +222,8 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
  */
 function getFields(graffitiModels, {
     hooks = {}, mutation = true, allowMongoIDMutation = false,
-    customQueries = {}, customMutations = {}, rebuildCache = true
+    customQueries = {}, customViewerFields = {}, customMutations = {},
+    rebuildCache = true
   } = {}) {
   const types = type.getTypes(graffitiModels, rebuildCache);
   const {viewer, singular} = hooks;
@@ -236,7 +237,8 @@ function getFields(graffitiModels, {
       ...getSingularQueryField(graffitiModel, type, hooks)
     };
   }, {
-    id: globalIdField('Viewer')
+    id: globalIdField('Viewer'),
+    ...customViewerFields
   });
   setTypeFields(GraphQLViewer, viewerFields);
 
