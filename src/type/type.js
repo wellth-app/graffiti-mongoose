@@ -252,7 +252,7 @@ function getType(graffitiModels, {name, description, fields}, path = [], rootTyp
             type: reference,
             args: connectionArgs,
             resolve: addHooks((rootValue, args, info) => {
-              args.id = rootValue[name].map((i) => i.toString());
+              args.id = rootValue[name].map((i) => i ? i.toString() : null);
               return connectionFromModel(graffitiModels[reference], args, info);
             }, hooks)
           };
