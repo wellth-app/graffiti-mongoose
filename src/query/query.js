@@ -67,6 +67,7 @@ function addOne(Collection, args) {
 function updateOne(Collection, {id, _id, ...args}, info) {
   _id = processId({id, _id});
 
+
   forEach(args, (arg, key) => {
     if (isArray(arg)) {
       args[key] = arg.map((id) => processId({id}));
@@ -172,10 +173,35 @@ function getAddOneMutateHandler(graffitiModel) {
   };
 }
 
+function setNulls(args) {
+  if (args.deletions) {
+    for (const key of args.deletions) {
+      const pathComponents = key.split('.');
+      let parent = args;
+      for (let i = 0; i < pathComponents.length; i++) {
+        const pathComponent = pathComponents[i];
+        if (i + 1 === pathComponents.length) {
+          // this is the leaf node
+          parent[pathComponent] = null;
+        } else {
+          // descend into tree, creating nodes if necessary
+          if (!(pathComponent in parent)) {
+            parent[pathComponent] = {};
+          }
+          parent = parent[pathComponent];
+        }
+      }
+    }
+    // so meta
+    delete args.deletions;
+  }
+}
+
 function getUpdateOneMutateHandler(graffitiModel) {
   return ({clientMutationId, ...args}) => { // eslint-disable-line
     const Collection = graffitiModel.model;
     if (Collection) {
+      setNulls(args);
       return updateOne(Collection, args);
     }
 

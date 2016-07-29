@@ -6,7 +6,8 @@ import {
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLBoolean,
-  GraphQLFloat
+  GraphQLFloat,
+  GraphQLString
 } from 'graphql';
 import {
   mutationWithClientMutationId,
@@ -142,7 +143,12 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
     }
 
     return inputFields;
-  }, {});
+  }, {
+    deletions: {
+      name: 'deletions',
+      type: new GraphQLList(GraphQLString)
+    }
+  });
 
   const updateInputFields = reduce(fields, (inputFields, field) => {
     if (field.type instanceof GraphQLObjectType && field.type.name.endsWith('Connection')) {
