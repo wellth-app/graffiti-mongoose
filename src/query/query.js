@@ -102,6 +102,10 @@ function deleteOne(Collection, args) {
   }));
 }
 
+function combineSelector(selector, field, key, value) {
+  return selector[field] ? { ...selector[field], [key]: value } : { [key]: value};
+}
+
 function getList(Collection, selector, options = {}, info = null) {
   if (selector && (isArray(selector.id) || isArray(selector._id))) {
     const {id, _id = id} = selector;
@@ -112,28 +116,45 @@ function getList(Collection, selector, options = {}, info = null) {
   }
 
   if (selector) {
+    const operatorRegex = /(.+)_(GTE|LTE|GT|LT|NE)$/;
+    // preprocess to set up raw value selectors as { $eq: value } statements
+    forEach(selector, (arg, key) => {
+      if (typeof key === 'string'
+        && !operatorRegex.test(key) // doesn't match one of our operators
+        && !(typeof selector[key] === 'object' && (
+          '$in' in selector[key]
+          || '$gt' in selector[key]
+          || '$gte' in selector[key]
+          || '$lt' in selector[key]
+          || '$lte' in selector[key]
+          || '$ne' in selector[key]
+        )) // isn't already a mongo clause
+      ) {
+        selector[key] = { $eq: selector[key] };
+      }
+    });
     forEach(selector, (arg, key) => {
       if (typeof key === 'string') {
-        const matches = key.match(/(.+)_(GTE|LTE|GT|LT|NE)$/);
+        const matches = key.match(operatorRegex);
         if (matches) {
           const field = matches[1];
           const operator = matches[2];
           delete selector[key];
           switch (operator) {
           case 'GT':
-            selector[field] = { $gt: arg };
+            selector[field] = combineSelector(selector, field, '$gt', arg);
             break;
           case 'LT':
-            selector[field] = { $lt: arg };
+            selector[field] = combineSelector(selector, field, '$lt', arg);
             break;
           case 'GTE':
-            selector[field] = { $gte: arg };
+            selector[field] = combineSelector(selector, field, '$gte', arg);
             break;
           case 'LTE':
-            selector[field] = { $lte: arg };
+            selector[field] = combineSelector(selector, field, '$lte', arg);
             break;
           case 'NE':
-            selector[field] = { $ne: arg };
+            selector[field] = combineSelector(selector, field, '$ne', arg);
             break;
           default: throw new Error(`Unsupported input argument operator "${operator}" in ${key}`);
           }
