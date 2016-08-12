@@ -121,14 +121,16 @@ function getList(Collection, selector, options = {}, info = null) {
     forEach(selector, (arg, key) => {
       if (typeof key === 'string'
         && !operatorRegex.test(key) // doesn't match one of our operators
-        && !(typeof selector[key] === 'object' && (
-          '$in' in selector[key]
-          || '$gt' in selector[key]
-          || '$gte' in selector[key]
-          || '$lt' in selector[key]
-          || '$lte' in selector[key]
-          || '$ne' in selector[key]
-        )) // isn't already a mongo clause
+        && !(typeof selector[key] === 'object' && selector[key] !== null
+          && (
+            '$in' in selector[key]
+            || '$gt' in selector[key]
+            || '$gte' in selector[key]
+            || '$lt' in selector[key]
+            || '$lte' in selector[key]
+            || '$ne' in selector[key]
+          )
+        ) // isn't already a mongo clause
       ) {
         selector[key] = { $eq: selector[key] };
       }
