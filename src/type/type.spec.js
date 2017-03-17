@@ -251,7 +251,7 @@ describe('type', () => {
       const type = getType([], user);
       const result = getArguments(type);
       forEach(['weight', 'createdAt', 'removed', 'nums'], (fieldName) => {
-        forEach(['GT', 'GTE', 'LT', 'LTE', 'NE'], (operator) => {
+        forEach(['GT', 'GTE', 'LT', 'LTE', 'NE', 'ISNULL'], (operator) => {
           const variant = `${fieldName}_${operator}`;
           expect(result[variant]).to.be.ok; // eslint-disable-line
         });

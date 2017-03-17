@@ -175,6 +175,10 @@ function getArguments(type, args = {}) {
       forEach(['GT', 'GTE', 'LT', 'LTE', 'NE'], (operator) => {
         args[`${field.name}_${operator}`] = field;
       });
+      args[`${field.name}_ISNULL`] = {
+        name: field.name,
+        type: GraphQLBoolean
+      };
     }
 
     if (field.type instanceof GraphQLObjectType) {
@@ -392,8 +396,6 @@ function getTypes(graffitiModels, rebuildCache = true) {
 
   return types;
 }
-
-export default getType;
 
 export default {
   getTypes
