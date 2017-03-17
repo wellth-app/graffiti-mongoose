@@ -116,7 +116,7 @@ function getList(Collection, selector, options = {}, info = null) {
   }
 
   if (selector) {
-    const operatorRegex = /(.+)_(GTE|LTE|GT|LT|NE)$/;
+    const operatorRegex = /(.+)_(GTE|LTE|GT|LT|NE|ISNULL)$/;
     // preprocess to set up raw value selectors as { $eq: value } statements
     forEach(selector, (arg, key) => {
       if (typeof key === 'string'
@@ -157,6 +157,14 @@ function getList(Collection, selector, options = {}, info = null) {
             break;
           case 'NE':
             selector[field] = combineSelector(selector, field, '$ne', arg);
+            break;
+          case 'ISNULL':
+            if (arg) {
+              selector[field] = combineSelector(selector, field, '$eq', null);
+            } else {
+              selector[field] = combineSelector(selector, field, '$exists', true);
+              selector[field] = combineSelector(selector, field, '$ne', null);
+            }
             break;
           default: throw new Error(`Unsupported input argument operator "${operator}" in ${key}`);
           }
