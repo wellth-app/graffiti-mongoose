@@ -233,7 +233,7 @@ function getType(graffitiModels, {name, description, fields}, path = [], rootTyp
     const newPath = [...path, name];
 
     // Don't add hidden fields to the GraphQLObjectType
-    if (hidden || name.startsWith('__')) {
+    if (hidden || name === '__v') {
       return graphQLFields;
     }
 
