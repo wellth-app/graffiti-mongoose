@@ -39,7 +39,11 @@ const UserSchema = new mongoose.Schema({
     nums: [Number],
     subsub: {
       bar: Number
-    }
+    },
+    subref: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
   },
   subArray: [{
     foo: String,

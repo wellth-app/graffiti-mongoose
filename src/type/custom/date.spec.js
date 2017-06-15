@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import {
   graphql,
   GraphQLSchema,
@@ -33,7 +33,7 @@ describe('GraphQL date type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ now }`)
+      await graphql(schema, '{ now }')
     ).to.deep.equal({
       data: {
         now: now.toJSON()
@@ -57,7 +57,7 @@ describe('GraphQL date type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ now }`)
+      await graphql(schema, '{ now }')
     ).to.deep.equal({
       data: {
         now: null
@@ -81,7 +81,7 @@ describe('GraphQL date type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ now }`)
+      await graphql(schema, '{ now }')
     ).to.containSubset({
       errors: [
         {
@@ -103,7 +103,7 @@ describe('GraphQL date type', () => {
                 type: GraphQlDate
               }
             },
-            resolve: (_, {date}) => new Date(date.getTime() + 24 * 3600 * 1000)
+            resolve: (_, { date }) => new Date(date.getTime() + (24 * 3600 * 1000))
           }
         }
       })

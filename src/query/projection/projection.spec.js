@@ -1,27 +1,27 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import getFieldList from './';
 
 describe('projection', () => {
   it('should return an object of fields (\'Field\' fragment)', () => {
-    const context = {
-      fieldASTs: {
+    const info = {
+      fieldNodes: {
         kind: 'Field',
-        name: {value: 'foo'},
+        name: { value: 'foo' },
         selectionSet: {
           selections: [{
             kind: 'Field',
-            name: {value: 'bar'},
+            name: { value: 'bar' },
             selectionSet: {
               selections: [{
                 kind: 'Field',
-                name: {value: 'baz'}
+                name: { value: 'baz' }
               }]
             }
           }]
         }
       }
     };
-    const fields = getFieldList(context);
+    const fields = getFieldList(info);
     expect(fields).to.be.eql({
       bar: true,
       baz: true

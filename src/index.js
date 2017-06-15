@@ -1,4 +1,4 @@
-import {graphql} from 'graphql';
+import { graphql } from 'graphql';
 import {
   getTypes,
   GraphQLBuffer,
@@ -6,8 +6,8 @@ import {
   GraphQLGeneric,
   GraphQLViewer
 } from './type';
-import {getSchema} from './schema';
-import {getModels} from './model';
+import { getSchema } from './schema';
+import { getModels } from './model';
 
 function _getTypes(mongooseModels) {
   const graffitiModels = getModels(mongooseModels);

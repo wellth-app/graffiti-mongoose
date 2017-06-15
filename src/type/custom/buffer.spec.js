@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import {
   graphql,
   GraphQLSchema,
@@ -29,7 +29,7 @@ describe('GraphQL buffer type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ foo }`)
+      await graphql(schema, '{ foo }')
     ).to.deep.equal({
       data: {
         foo: buffer.toString()
@@ -53,7 +53,7 @@ describe('GraphQL buffer type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ foo }`)
+      await graphql(schema, '{ foo }')
     ).to.deep.equal({
       data: {
         foo: null
@@ -73,7 +73,7 @@ describe('GraphQL buffer type', () => {
                 type: GraphQLBuffer
               }
             },
-            resolve: (_, {bar}) => new Buffer(`${bar.toString()}-qux`)
+            resolve: (_, { bar }) => new Buffer(`${bar.toString()}-qux`)
           }
         }
       })

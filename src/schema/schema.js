@@ -1,4 +1,5 @@
-import {reduce, isArray} from 'lodash';
+import { reduce, isArray, isFunction, mapValues } from 'lodash';
+import { toCollectionName } from 'mongoose/lib/utils';
 import {
   GraphQLList,
   GraphQLNonNull,
@@ -16,23 +17,20 @@ import {
   globalIdField
 } from 'graphql-relay';
 import model from './../model';
-import {
+import type, {
   GraphQLViewer,
   nodeInterface,
   getTypeFields,
   getArguments,
   setTypeFields
 } from './../type';
-import type from './../type';
-import {
+import query, {
   idToCursor,
   getIdFetcher,
   connectionFromModel
 } from './../query';
-import query from './../query';
-import {addHooks} from '../utils';
+import { addHooks } from '../utils';
 import viewerInstance from '../model/viewer';
-import {toCollectionName} from 'mongoose/lib/utils';
 import createInputObject from '../type/custom/to-input-object';
 
 const idField = {
@@ -41,8 +39,8 @@ const idField = {
 };
 
 function getSingularQueryField(graffitiModel, type, hooks = {}) {
-  const {name} = type;
-  const {singular} = hooks;
+  const { name } = type;
+  const { singular } = hooks;
   const singularName = name.toLowerCase();
 
   return {
@@ -57,8 +55,8 @@ function getSingularQueryField(graffitiModel, type, hooks = {}) {
 }
 
 function getPluralQueryField(graffitiModel, type, hooks = {}) {
-  const {name} = type;
-  const {plural} = hooks;
+  const { name } = type;
+  const { plural } = hooks;
   const pluralName = toCollectionName(name);
 
   return {
@@ -87,15 +85,19 @@ function getQueryField(graffitiModel, type, hooks) {
 }
 
 function getConnectionField(graffitiModel, type, hooks = {}) {
-  const {name} = type;
-  const {plural} = hooks;
+  const { name } = type;
+  const { plural } = hooks;
   const pluralName = toCollectionName(name.toLowerCase());
-  const {connectionType} = connectionDefinitions({name, nodeType: type, connectionFields: {
-    count: {
-      name: 'count',
-      type: GraphQLFloat
+  const { connectionType } = connectionDefinitions({
+    name,
+    nodeType: type,
+    connectionFields: {
+      count: {
+        name: 'count',
+        type: GraphQLFloat
+      }
     }
-  }});
+  });
 
   return {
     [pluralName]: {
@@ -107,8 +109,8 @@ function getConnectionField(graffitiModel, type, hooks = {}) {
 }
 
 function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDMutation) {
-  const {name} = type;
-  const {mutation} = hooks;
+  const { name } = type;
+  const { mutation } = hooks;
 
   const fields = getTypeFields(type);
   const inputFields = reduce(fields, (inputFields, field) => {
@@ -139,7 +141,10 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
     } else if (!(field.type instanceof GraphQLObjectType)
         && field.name !== 'id' && !field.name.startsWith('__')
         && (allowMongoIDMutation || field.name !== '_id')) {
-      inputFields[field.name] = field;
+      inputFields[field.name] = {
+        name: field.name,
+        type: field.type
+      };
     }
 
     return inputFields;
@@ -176,10 +181,13 @@ function getMutationField(graffitiModel, type, viewer, hooks = {}, allowMongoIDM
       outputFields: {
         viewer,
         [edgeName]: {
-          type: connectionDefinitions({name: changedName, nodeType: new GraphQLObjectType({
-            name: nodeName,
-            fields
-          })}).edgeType,
+          type: connectionDefinitions({
+            name: changedName,
+            nodeType: new GraphQLObjectType({
+              name: nodeName,
+              fields
+            })
+          }).edgeType,
           resolve: (node) => ({
             node,
             cursor: idToCursor(node.id)
@@ -232,7 +240,7 @@ function getFields(graffitiModels, {
     rebuildCache = true
   } = {}) {
   const types = type.getTypes(graffitiModels, rebuildCache);
-  const {viewer, singular} = hooks;
+  const { viewer, singular } = hooks;
 
   const viewerFields = reduce(types, (fields, type, key) => {
     type.name = type.name || key;
@@ -254,7 +262,7 @@ function getFields(graffitiModels, {
     resolve: addHooks(() => viewerInstance, viewer)
   };
 
-  const {queries, mutations} = reduce(types, ({queries, mutations}, type, key) => {
+  const { queries, mutations } = reduce(types, ({ queries, mutations }, type, key) => {
     type.name = type.name || key;
     const graffitiModel = graffitiModels[type.name];
     return {
@@ -268,13 +276,18 @@ function getFields(graffitiModels, {
       }
     };
   }, {
-    queries: customQueries,
-    mutations: customMutations
+    queries: isFunction(customQueries)
+      ? customQueries(mapValues(types, (type) => createInputObject(type)), types)
+      : customQueries,
+    mutations: isFunction(customMutations)
+      ? customMutations(mapValues(types, (type) => createInputObject(type)), types)
+      : customMutations
   });
 
   const RootQuery = new GraphQLObjectType({
     name: 'RootQuery',
     fields: {
+      ...queries,
       viewer: viewerField,
       node: {
         name: 'node',
@@ -287,8 +300,7 @@ function getFields(graffitiModels, {
           }
         },
         resolve: addHooks(getIdFetcher(graffitiModels), singular)
-      },
-      ...queries
+      }
     }
   });
 

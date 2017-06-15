@@ -1,5 +1,5 @@
-import {expect} from 'chai';
-import {forEach} from 'lodash';
+import { expect } from 'chai';
+import { forEach } from 'lodash';
 import {
   GraphQLString,
   GraphQLFloat,
@@ -114,7 +114,7 @@ describe('type', () => {
   describe('getType', () => {
     it('should implement the Node interface', () => {
       const result = getType([], user);
-      expect(result._interfaces).to.containSubset([{
+      expect(result._typeConfig.interfaces).to.containSubset([{
         name: 'Node'
       }]);
       expect(result._typeConfig.fields()).to.containSubset({
@@ -280,7 +280,7 @@ describe('type', () => {
       const fields = userType._typeConfig.fields();
 
       expect(fields.mother.type).to.be.equal(userType);
-      expect(fields.sub.type._fields.subsub.type._fields.sister.type).to.be.equal(userType);
+      expect(fields.sub.type._typeConfig.fields().subsub.type._typeConfig.fields().sister.type).to.be.equal(userType);
       expect(fields.subArray.type.ofType._typeConfig.fields().brother.type).to.be.equal(userType);
 
       // connection type

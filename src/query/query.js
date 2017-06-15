@@ -1,12 +1,12 @@
-import {forEach, isArray, isString} from 'lodash';
-import {fromGlobalId, toGlobalId} from 'graphql-relay';
+import { forEach, isArray, isString } from 'lodash';
+import { fromGlobalId, toGlobalId } from 'graphql-relay';
 import getFieldList from './projection';
 import viewer from '../model/viewer';
 
-function processId({id, _id = id}) {
+function processId({ id, _id = id }) {
   // global or mongo id
   if (isString(_id) && !/^[a-fA-F0-9]{24}$/.test(_id)) {
-    const {type, id} = fromGlobalId(_id);
+    const { type, id } = fromGlobalId(_id);
     if (type && /^[a-zA-Z]*$/.test(type)) {
       return id;
     }
@@ -17,17 +17,17 @@ function processId({id, _id = id}) {
 
 function getCount(Collection, selector) {
   if (selector && (isArray(selector.id) || isArray(selector._id))) {
-    const {id, _id = id} = selector;
+    const { id, _id = id } = selector;
     delete selector.id;
     selector._id = {
-      $in: _id.map((id) => processId({id}))
+      $in: _id.map((id) => processId({ id }))
     };
   }
 
   return Collection.count(selector);
 }
 
-function getOne(Collection, args, info) {
+function getOne(Collection, args, context, info) {
   const id = processId(args);
   const projection = getFieldList(info);
   return Collection.findById(id, projection).then((result) => {
@@ -45,9 +45,9 @@ function getOne(Collection, args, info) {
 function addOne(Collection, args) {
   forEach(args, (arg, key) => {
     if (isArray(arg)) {
-      args[key] = arg.map((id) => processId({id}));
+      args[key] = arg.map((id) => processId({ id }));
     } else {
-      args[key] = processId({id: arg});
+      args[key] = processId({ id: arg });
     }
   });
 
@@ -64,29 +64,29 @@ function addOne(Collection, args) {
   });
 }
 
-function updateOne(Collection, {id, _id, ...args}, info) {
-  _id = processId({id, _id});
+function updateOne(Collection, { id, _id, ...args }, context, info) {
+  _id = processId({ id, _id });
 
 
   forEach(args, (arg, key) => {
     if (isArray(arg)) {
-      args[key] = arg.map((id) => processId({id}));
+      args[key] = arg.map((id) => processId({ id }));
     } else {
-      args[key] = processId({id: arg});
+      args[key] = processId({ id: arg });
     }
 
     if (key.endsWith('_add')) {
       const values = args[key];
       args.$push = {
-        [key.slice(0, -4)]: {$each: values}
+        [key.slice(0, -'_add'.length)]: { $each: values }
       };
       delete args[key];
     }
   });
 
-  return Collection.update({_id}, args).then((res) => {
+  return Collection.update({ _id }, args).then((res) => {
     if (res.ok) {
-      return getOne(Collection, {_id}, info);
+      return getOne(Collection, { _id }, context, info);
     }
 
     return null;
@@ -96,22 +96,22 @@ function updateOne(Collection, {id, _id, ...args}, info) {
 function deleteOne(Collection, args) {
   const _id = processId(args);
 
-  return Collection.remove({_id}).then(({result}) => ({
+  return Collection.remove({ _id }).then(({ result }) => ({
     id: toGlobalId(Collection.modelName, _id),
     ok: !!result.ok
   }));
 }
 
 function combineSelector(selector, field, key, value) {
-  return selector[field] ? { ...selector[field], [key]: value } : { [key]: value};
+  return selector[field] ? { ...selector[field], [key]: value } : { [key]: value };
 }
 
-function getList(Collection, selector, options = {}, info = null) {
+function getList(Collection, selector, options = {}, context, info = null) {
   if (selector && (isArray(selector.id) || isArray(selector._id))) {
-    const {id, _id = id} = selector;
+    const { id, _id = id } = selector;
     delete selector.id;
     selector._id = {
-      $in: _id.map((id) => processId({id}))
+      $in: _id.map((id) => processId({ id }))
     };
   }
 
@@ -143,30 +143,30 @@ function getList(Collection, selector, options = {}, info = null) {
           const operator = matches[2];
           delete selector[key];
           switch (operator) {
-          case 'GT':
-            selector[field] = combineSelector(selector, field, '$gt', arg);
-            break;
-          case 'LT':
-            selector[field] = combineSelector(selector, field, '$lt', arg);
-            break;
-          case 'GTE':
-            selector[field] = combineSelector(selector, field, '$gte', arg);
-            break;
-          case 'LTE':
-            selector[field] = combineSelector(selector, field, '$lte', arg);
-            break;
-          case 'NE':
-            selector[field] = combineSelector(selector, field, '$ne', arg);
-            break;
-          case 'ISNULL':
-            if (arg) {
-              selector[field] = combineSelector(selector, field, '$eq', null);
-            } else {
-              selector[field] = combineSelector(selector, field, '$exists', true);
-              selector[field] = combineSelector(selector, field, '$ne', null);
-            }
-            break;
-          default: throw new Error(`Unsupported input argument operator "${operator}" in ${key}`);
+            case 'GT':
+              selector[field] = combineSelector(selector, field, '$gt', arg);
+              break;
+            case 'LT':
+              selector[field] = combineSelector(selector, field, '$lt', arg);
+              break;
+            case 'GTE':
+              selector[field] = combineSelector(selector, field, '$gte', arg);
+              break;
+            case 'LTE':
+              selector[field] = combineSelector(selector, field, '$lte', arg);
+              break;
+            case 'NE':
+              selector[field] = combineSelector(selector, field, '$ne', arg);
+              break;
+            case 'ISNULL':
+              if (arg) {
+                selector[field] = combineSelector(selector, field, '$eq', null);
+              } else {
+                selector[field] = combineSelector(selector, field, '$exists', true);
+                selector[field] = combineSelector(selector, field, '$ne', null);
+              }
+              break;
+            default: throw new Error(`Unsupported input argument operator "${operator}" in ${key}`);
           }
         }
       }
@@ -183,10 +183,10 @@ function getList(Collection, selector, options = {}, info = null) {
 }
 
 function getOneResolver(graffitiModel) {
-  return (root, args, info) => {
+  return (root, args, context, info) => {
     const Collection = graffitiModel.model;
     if (Collection) {
-      return getOne(Collection, args, info);
+      return getOne(Collection, args, context, info);
     }
 
     return null;
@@ -194,7 +194,8 @@ function getOneResolver(graffitiModel) {
 }
 
 function getAddOneMutateHandler(graffitiModel) {
-  return ({clientMutationId, ...args}) => { // eslint-disable-line
+  // eslint-disable-next-line no-unused-vars
+  return ({ clientMutationId, ...args }) => {
     const Collection = graffitiModel.model;
     if (Collection) {
       return addOne(Collection, args);
@@ -206,10 +207,10 @@ function getAddOneMutateHandler(graffitiModel) {
 
 function setNulls(args) {
   if (args.deletions) {
-    for (const key of args.deletions) {
+    args.deletions.forEach((key) => {
       const pathComponents = key.split('.');
       let parent = args;
-      for (let i = 0; i < pathComponents.length; i++) {
+      for (let i = 0; i < pathComponents.length; i += 1) {
         const pathComponent = pathComponents[i];
         if (i + 1 === pathComponents.length) {
           // this is the leaf node
@@ -222,14 +223,15 @@ function setNulls(args) {
           parent = parent[pathComponent];
         }
       }
-    }
+    });
     // so meta
     delete args.deletions;
   }
 }
 
 function getUpdateOneMutateHandler(graffitiModel) {
-  return ({clientMutationId, ...args}) => { // eslint-disable-line
+  // eslint-disable-next-line no-unused-vars
+  return ({ clientMutationId, ...args }) => {
     const Collection = graffitiModel.model;
     if (Collection) {
       setNulls(args);
@@ -241,7 +243,8 @@ function getUpdateOneMutateHandler(graffitiModel) {
 }
 
 function getDeleteOneMutateHandler(graffitiModel) {
-  return ({clientMutationId, ...args}) => { // eslint-disable-line
+  // eslint-disable-next-line no-unused-vars
+  return ({ clientMutationId, ...args }) => {
     const Collection = graffitiModel.model;
     if (Collection) {
       return deleteOne(Collection, args);
@@ -252,7 +255,7 @@ function getDeleteOneMutateHandler(graffitiModel) {
 }
 
 function getListResolver(graffitiModel) {
-  return (root, {ids, ...args} = {}, info) => {
+  return (root, { ids, ...args } = {}, context, info) => {
     if (ids) {
       args.id = ids;
     }
@@ -262,7 +265,7 @@ function getListResolver(graffitiModel) {
 
     const Collection = graffitiModel.model;
     if (Collection) {
-      return getList(Collection, args, {sort}, info);
+      return getList(Collection, args, { sort }, context, info);
     }
 
     return null;
@@ -273,7 +276,7 @@ function getListResolver(graffitiModel) {
  * Returns the first element in a Collection
  */
 function getFirst(Collection) {
-  return Collection.findOne({}, {}, {sort: {_id: 1}});
+  return Collection.findOne({}, {}, { sort: { _id: 1 } });
 }
 
 /**
@@ -281,14 +284,14 @@ function getFirst(Collection) {
  * an object based on a global id
  */
 function getIdFetcher(graffitiModels) {
-  return function idFetcher(obj, {id: globalId}, info) {
-    const {type, id} = fromGlobalId(globalId);
+  return function idFetcher(obj, { id: globalId }, context, info) {
+    const { type, id } = fromGlobalId(globalId);
 
     if (type === 'Viewer') {
       return viewer;
     } else if (graffitiModels[type]) {
       const Collection = graffitiModels[type].model;
-      return getOne(Collection, {id}, info);
+      return getOne(Collection, { id }, context, info);
     }
 
     return null;
@@ -351,13 +354,13 @@ function getId(cursor) {
 /**
  * Returns a connection based on a graffitiModel
  */
-async function connectionFromModel(graffitiModel, args, info) {
+async function connectionFromModel(graffitiModel, args, context, info) {
   const Collection = graffitiModel.model;
   if (!Collection) {
     return emptyConnection();
   }
 
-  const {before, after, first, last, id, orderBy = {_id: 1}, ...selector} = args;
+  const { before, after, first, last, id, orderBy = { _id: 1 }, ...selector } = args;
 
   const begin = getId(after);
   const end = getId(before);
@@ -394,7 +397,7 @@ async function connectionFromModel(graffitiModel, args, info) {
     limit,
     skip: offset,
     sort
-  }, info);
+  }, context, info);
   const count = await getCount(Collection, selector);
 
   if (result.length === 0) {

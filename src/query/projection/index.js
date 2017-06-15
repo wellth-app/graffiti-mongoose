@@ -1,21 +1,21 @@
-export default function getFieldList(context, fieldASTs) {
-  if (!context) {
+function getFieldList(info, fieldNodes) {
+  if (!info) {
     return {};
   }
 
-  fieldASTs = fieldASTs || context.fieldASTs;
+  fieldNodes = fieldNodes || info.fieldNodes;
 
   // for recursion
   // Fragments doesn't have many sets
-  let asts = fieldASTs;
-  if (!Array.isArray(asts)) {
-    asts = [asts];
+  let nodes = fieldNodes;
+  if (!Array.isArray(nodes)) {
+    nodes = nodes ? [nodes] : [];
   }
 
   // get all selectionSets
-  const selections = asts.reduce((selections, source) => {
+  const selections = nodes.reduce((selections, source) => {
     if (source.selectionSet) {
-      selections.push(...source.selectionSet.selections);
+      return selections.concat(source.selectionSet.selections);
     }
 
     return selections;
@@ -23,27 +23,29 @@ export default function getFieldList(context, fieldASTs) {
 
   // return fields
   return selections.reduce((list, ast) => {
-    const {name, kind} = ast;
+    const { name, kind } = ast;
 
     switch (kind) {
-    case 'Field':
-      list[name.value] = true;
-      return {
-        ...list,
-        ...getFieldList(context, ast)
-      };
-    case 'InlineFragment':
-      return {
-        ...list,
-        ...getFieldList(context, ast)
-      };
-    case 'FragmentSpread':
-      return {
-        ...list,
-        ...getFieldList(context, context.fragments[name.value])
-      };
-    default:
-      throw new Error('Unsuported query selection');
+      case 'Field':
+        return {
+          ...list,
+          ...getFieldList(info, ast),
+          [name.value]: true
+        };
+      case 'InlineFragment':
+        return {
+          ...list,
+          ...getFieldList(info, ast)
+        };
+      case 'FragmentSpread':
+        return {
+          ...list,
+          ...getFieldList(info, info.fragments[name.value])
+        };
+      default:
+        throw new Error('Unsuported query selection');
     }
   }, {});
 }
+
+export default getFieldList;
