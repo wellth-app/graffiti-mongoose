@@ -20,7 +20,9 @@ export function getCacheByCollection(Collection) {
 
 export function getItemFromCacheById(Collection, id, projection) {
   const typeCache = getCacheByCollection(Collection);
-  const itemContainer = typeCache.get(id);
+  // we use peek here, since we only want the set operation to update the "recently-usedness" of the item
+  // because we want to expire items that haven't been fetched from the database recently
+  const itemContainer = typeCache.peek(id);
   if (!itemContainer) {
     return undefined;
   }
