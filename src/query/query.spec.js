@@ -103,6 +103,19 @@ describe('query', () => {
       result = await oneResolver({}, { id });
       expect(result).to.eql(resultObj);
     });
+
+    it('should return the same object twice', async () => {
+      let result = await oneResolver({}, { id: obj._id });
+      expect(result).to.eql(resultObj);
+      result = await oneResolver({}, { id: obj._id });
+      expect(result).to.eql(resultObj);
+
+      const id = toGlobalId('type', obj._id);
+      result = await oneResolver({}, { id });
+      expect(result).to.eql(resultObj);
+      result = await oneResolver({}, { id });
+      expect(result).to.eql(resultObj);
+    });
   });
 
   describe('getListResolver', () => {

@@ -2,6 +2,11 @@ import { forEach, isArray, isString } from 'lodash';
 import { fromGlobalId, toGlobalId } from 'graphql-relay';
 import getFieldList from './projection';
 import viewer from '../model/viewer';
+import {
+  getItemFromCacheById,
+  putItemIntoCacheById,
+  invalidateCacheById
+} from './cache';
 
 function processId({ id, _id = id }) {
   // global or mongo id
@@ -30,12 +35,20 @@ function getCount(Collection, selector) {
 function getOne(Collection, args, context, info) {
   const id = processId(args);
   const projection = getFieldList(info);
+  const cachedItem = getItemFromCacheById(Collection, id, projection);
+  if (cachedItem) {
+    return new Promise((resolve) => {
+      resolve(cachedItem);
+    });
+  }
   return Collection.findById(id, projection).then((result) => {
     if (result) {
-      return {
+      const response = {
         ...result.toObject(),
         _type: Collection.modelName
       };
+      putItemIntoCacheById(Collection, id, projection, response);
+      return response;
     }
 
     return null;
@@ -84,6 +97,9 @@ function updateOne(Collection, { id, _id, ...args }, context, info) {
     }
   });
 
+  // clear the cache
+  invalidateCacheById(Collection, _id);
+
   return Collection.update({ _id }, args).then((res) => {
     if (res.ok) {
       return getOne(Collection, { _id }, context, info);
@@ -95,6 +111,9 @@ function updateOne(Collection, { id, _id, ...args }, context, info) {
 
 function deleteOne(Collection, args) {
   const _id = processId(args);
+
+  // clear the cache
+  invalidateCacheById(Collection, _id);
 
   return Collection.remove({ _id }).then(({ result }) => ({
     id: toGlobalId(Collection.modelName, _id),
