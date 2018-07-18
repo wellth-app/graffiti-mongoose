@@ -5,7 +5,7 @@ const typeToCacheMap = {};
 
 const options = {
   max: 20,          // maximum number of items the cache can hold before purging oldest items
-  maxAge: 1000 * 20 // maximum number of milliseconds that the cache can hold an item before purging it
+  maxAge: 1000 * 2  // maximum number of milliseconds that the cache can hold an item before purging it
 };
 
 export function getCacheByCollection(Collection) {
