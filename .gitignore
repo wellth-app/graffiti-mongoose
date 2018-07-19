@@ -1,12 +1,8 @@
 # Logs
 logs
 *.log
-<<<<<<< HEAD
 #lib
 dist
-=======
-lib
->>>>>>> feature/lru-cache
 
 # Runtime data
 pids
