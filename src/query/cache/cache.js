@@ -46,3 +46,10 @@ export function invalidateCacheById(Collection, id) {
   const typeCache = getCacheByCollection(Collection);
   typeCache.del(id);
 }
+
+export default {
+  getCacheByCollection,
+  getItemFromCacheById,
+  putItemIntoCacheById,
+  invalidateCacheById
+};
