@@ -1,4 +1,4 @@
-import {reduce, reduceRight, merge} from 'lodash';
+import { reduce, reduceRight, merge } from 'lodash';
 import mongoose from 'mongoose';
 
 const embeddedModels = {};
@@ -43,7 +43,7 @@ function getField(schemaPath) {
       options,
       enumValues
     } = schemaPath.caster;
-    const {ref} = options || {};
+    const { ref } = options || {};
 
     field.subtype = instance;
     if (enumValues && enumValues.length > 0) {
@@ -67,46 +67,43 @@ function getField(schemaPath) {
  * @return {Object} field
  */
 function extractPath(schemaPath) {
-  const subs = schemaPath.path.split('.');
   const subNames = schemaPath.path.split('.');
 
-  return reduceRight(subs, (field, sub, key) => {
+  return reduceRight(subNames, (fields, name, key) => {
     const obj = {};
 
-    if (schemaPath instanceof mongoose.Schema.Types.DocumentArray && key === (subs.length - 1)) {
+    if (schemaPath instanceof mongoose.Schema.Types.DocumentArray && key === (subNames.length - 1)) {
       const subSchemaPaths = schemaPath.schema.paths;
-      const fields = extractPaths(subSchemaPaths, {name: sub}); // eslint-disable-line no-use-before-define
-      obj[sub] = {
-        name: sub,
+      const fields = extractPaths(subSchemaPaths, { name }); // eslint-disable-line no-use-before-define
+      obj[name] = {
+        name,
+        fields,
         nonNull: false,
         type: 'Array',
-        subtype: 'Object',
-        fields
+        subtype: 'Object'
       };
     } else if (schemaPath instanceof mongoose.Schema.Types.Embedded) {
-      schemaPath.modelName = schemaPath.schema.options.graphqlTypeName || sub;
+      schemaPath.modelName = schemaPath.schema.options.graphqlTypeName || name;
       // embedded model must be unique Instance
       const embeddedModel = embeddedModels.hasOwnProperty(schemaPath.modelName)
         ? embeddedModels[schemaPath.modelName]
         : getModel(schemaPath); // eslint-disable-line no-use-before-define
 
       embeddedModels[schemaPath.modelName] = embeddedModel;
-      obj[sub] = {
+      obj[name] = {
         ...getField(schemaPath),
         embeddedModel
       };
-    } else if (key === (subs.length - 1)) {
-      obj[sub] = getField(schemaPath);
+    } else if (key === subNames.length - 1) {
+      obj[name] = getField(schemaPath);
     } else {
-      obj[sub] = {
-        name: sub,
+      obj[name] = {
+        name,
+        fields,
         nonNull: false,
-        type: 'Object',
-        fields: field
+        type: 'Object'
       };
     }
-
-    subNames.pop();
 
     return obj;
   }, {});
@@ -135,7 +132,7 @@ function getModel(model) {
   const schemaPaths = model.schema.paths;
   const name = model.modelName;
 
-  const fields = extractPaths(schemaPaths, {name});
+  const fields = extractPaths(schemaPaths, { name });
 
   return {
     name,
@@ -152,10 +149,10 @@ function getModel(model) {
 function getModels(mongooseModels) {
   return mongooseModels
     .map(getModel)
-    .reduce((models, model) => {
-      models[model.name] = model;
-      return models;
-    }, {});
+    .reduce((models, model) => ({
+      ...models,
+      [model.name]: model
+    }), {});
 }
 
 export default {

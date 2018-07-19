@@ -1,7 +1,9 @@
-import {expect} from 'chai';
-import {spy} from 'sinon';
+/* eslint-disable no-unused-expressions */
 
-import {getSchema, graphql} from './';
+import { expect } from 'chai';
+import { spy } from 'sinon';
+
+import { getSchema, graphql } from './';
 import User from '../fixture/user';
 
 describe('e2e', () => {
@@ -30,10 +32,10 @@ describe('e2e', () => {
           post: spy()
         }
       };
-      schema = getSchema([User], {hooks});
+      schema = getSchema([User], { hooks });
     });
 
-    beforeEach(async function BeforeEach() {
+    beforeEach(async () => {
       motherUser = new User({
         name: 'Mother',
         age: 54,
@@ -55,18 +57,21 @@ describe('e2e', () => {
         mother: motherUser._id,
         friends: [user1._id],
         objectIds: [user1._id],
-        enumerations: ['a', 'b']
+        enumerations: ['a', 'b'],
+        sub: {
+          subref: motherUser._id
+        }
       });
 
       await user2.save();
     });
 
-    afterEach(async function AfterEach() {
+    afterEach(async () => {
       await [motherUser.remove(), user1.remove(), user2.remove()];
     });
 
     describe('singular query', () => {
-      it('should get data from database by id', async function Test() {
+      it('should get data from database by id', async () => {
         const result = await graphql(schema, `{
           user(id: "${user2._id}") {
             _id
@@ -87,6 +92,11 @@ describe('e2e', () => {
             }
             enumerations
             objectIds
+            sub {
+              subref {
+                name
+              }
+            }
           }
         }`);
 
@@ -110,14 +120,19 @@ describe('e2e', () => {
                 }]
               },
               objectIds: [user1._id.toString()],
-              enumerations: ['a', 'b']
+              enumerations: ['a', 'b'],
+              sub: {
+                subref: {
+                  name: 'Mother'
+                }
+              }
             }
           }
         });
       });
 
       describe('with fragments', () => {
-        it('should support fragments', async function Test() {
+        it('should support fragments', async () => {
           const result = await graphql(schema, `
             query GetUser {
               user(id: "${user2._id}") {
@@ -160,7 +175,7 @@ describe('e2e', () => {
           });
         });
 
-        it('should support inline fragments', async function Test() {
+        it('should support inline fragments', async () => {
           const result = await graphql(schema, `{
             user(id: "${user2._id}") {
               _id
@@ -185,7 +200,7 @@ describe('e2e', () => {
     });
 
     describe('plural query', () => {
-      it('should get data from database and filter by number', async function Test() {
+      it('should get data from database and filter by number', async () => {
         let result = await graphql(schema, `{
           users(age: 28) {
             _id
@@ -229,7 +244,7 @@ describe('e2e', () => {
         expect(result.data.users).to.deep.include.members(expected);
       });
 
-      it('should get data from database and filter by array of _id(s)', async function Test() {
+      it('should get data from database and filter by array of _id(s)', async () => {
         const result = await graphql(schema, `{
           users(id: ["${user1._id}", "${user2._id}"]) {
             _id
@@ -247,7 +262,7 @@ describe('e2e', () => {
         });
       });
 
-      it('should get data from database and filter by array of mother\'s _id(s)', async function Test() {
+      it('should get data from database and filter by array of mother\'s _id(s)', async () => {
         const result = await graphql(schema, `{
           users(mother: ["${motherUser._id}"]) {
             _id
@@ -263,7 +278,7 @@ describe('e2e', () => {
         });
       });
 
-      it('should get data from database and filter by array of bad mother\'s _id(s)', async function Test() {
+      it('should get data from database and filter by array of bad mother\'s _id(s)', async () => {
         const badMotherId = `${motherUser._id}`.replace(/[0-9]/, 'a');
         const result = await graphql(schema, `{
           users(mother: ["${badMotherId}"]) {
@@ -278,7 +293,7 @@ describe('e2e', () => {
         });
       });
 
-      it('should support viewer field', async function Test() {
+      it('should support viewer field', async () => {
         const result = await graphql(schema, `{
           viewer {
             id
@@ -294,18 +309,18 @@ describe('e2e', () => {
           }
         }`);
 
-        const {id, users} = result.data.viewer;
-        expect(id).to.be.ok; // eslint-disable-line
+        const { id, users } = result.data.viewer;
+        expect(id).to.be.ok;
         expect(users.count).to.be.equal(3);
 
         expect(users.edges).to.containSubset([
-          {node: {name: 'Mother'}},
-          {node: {name: 'Foo'}},
-          {node: {name: 'Bar'}}
+          { node: { name: 'Mother' } },
+          { node: { name: 'Foo' } },
+          { node: { name: 'Bar' } }
         ]);
       });
 
-      it('should filter connections by arguments', async function Test() {
+      it('should filter connections by arguments', async () => {
         const result = await graphql(schema, `{
           viewer {
             users(name: "Foo") {
@@ -319,15 +334,15 @@ describe('e2e', () => {
           }
         }`);
 
-        const {users} = result.data.viewer;
+        const { users } = result.data.viewer;
         expect(users.count).to.be.eql(1);
 
         expect(users.edges).to.containSubset([
-          {node: {name: 'Foo'}}
+          { node: { name: 'Foo' } }
         ]);
       });
 
-      it('should filter connections by GraphQLID arguments', async function Test() {
+      it('should filter connections by GraphQLID arguments', async () => {
         const result = await graphql(schema, `{
           viewer {
             users(mother: ["${motherUser._id}"]) {
@@ -341,15 +356,15 @@ describe('e2e', () => {
           }
         }`);
 
-        const {users} = result.data.viewer;
+        const { users } = result.data.viewer;
         expect(users.count).to.be.eql(1);
 
         expect(users.edges).to.containSubset([
-          {node: {name: 'Bar'}}
+          { node: { name: 'Bar' } }
         ]);
       });
 
-      it('should return results in ascending order', async function Test() {
+      it('should return results in ascending order', async () => {
         let result = await graphql(schema, `{
           viewer {
             users(orderBy: NAME_ASC) {
@@ -381,7 +396,7 @@ describe('e2e', () => {
         ]);
       });
 
-      it('should return results in descending order', async function Test() {
+      it('should return results in descending order', async () => {
         let result = await graphql(schema, `{
           viewer {
             users(orderBy: NAME_DESC) {
@@ -413,7 +428,7 @@ describe('e2e', () => {
         ]);
       });
 
-      it('should be able to limit the ordered results', async function Test() {
+      it('should be able to limit the ordered results', async () => {
         const result = await graphql(schema, `{
           viewer {
             users(orderBy: NAME_DESC, first: 2) {
@@ -432,7 +447,7 @@ describe('e2e', () => {
         ]);
       });
 
-      it('should be able to limit the ordered results in reverse', async function Test() {
+      it('should be able to limit the ordered results in reverse', async () => {
         const result = await graphql(schema, `{
           viewer {
             users(orderBy: NAME_DESC, last: 2) {
@@ -451,7 +466,7 @@ describe('e2e', () => {
         ]);
       });
 
-      it('should be able to paginate the ordered results', async function Test() {
+      it('should be able to paginate the ordered results', async () => {
         let result = await graphql(schema, `{
           viewer {
             users(orderBy: NAME_DESC) {
@@ -488,7 +503,7 @@ describe('e2e', () => {
     });
 
     describe('mutations', () => {
-      it('should add data to the database', async function Test() {
+      it('should add data to the database', async () => {
         let result = await graphql(schema, `
           mutation addUserMutation {
             addUser(input: {name: "Test User", clientMutationId: "1"}) {
@@ -504,7 +519,7 @@ describe('e2e', () => {
         `);
 
         const node = result.data.addUser.changedUserEdge.node;
-        const {id} = node;
+        const { id } = node;
         expect(typeof node._id).to.be.equal('string');
         expect(node.name).to.be.equal('Test User');
 
@@ -520,10 +535,10 @@ describe('e2e', () => {
           }
         `);
 
-        expect(result.errors).not.to.be.ok; // eslint-disable-line
+        expect(result.errors).not.to.be.ok;
       });
 
-      it('should update data', async function Test() {
+      it('should update data', async () => {
         let result = await graphql(schema, `
           mutation addUserMutation {
             addUser(input: {name: "Test User", clientMutationId: "1"}) {
@@ -591,7 +606,7 @@ describe('e2e', () => {
         });
       });
 
-      it('should delete data', async function Test() {
+      it('should delete data', async () => {
         let result = await graphql(schema, `
           mutation addUserMutation {
             addUser(input: {name: "Test User", clientMutationId: "1"}) {
@@ -603,7 +618,7 @@ describe('e2e', () => {
             }
           }
         `);
-        const {id} = result.data.addUser.changedUserEdge.node;
+        const { id } = result.data.addUser.changedUserEdge.node;
 
         result = await graphql(schema, `
           mutation deleteUserMutation {
@@ -628,12 +643,12 @@ describe('e2e', () => {
 
     describe('hooks', () => {
       it('should call viewer hooks on a viewer query', async () => {
-        const {pre, post} = hooks.viewer;
+        const { pre, post } = hooks.viewer;
         pre.reset();
         post.reset();
 
-        expect(pre.called).to.be.false; // eslint-disable-line
-        expect(post.called).to.be.false; // eslint-disable-line
+        expect(pre.called).to.be.false;
+        expect(post.called).to.be.false;
         await graphql(schema, `{
           viewer {
             users {
@@ -641,49 +656,49 @@ describe('e2e', () => {
             }
           }
         }`);
-        expect(pre.called).to.be.true; // eslint-disable-line
-        expect(post.called).to.be.true; // eslint-disable-line
+        expect(pre.called).to.be.true;
+        expect(post.called).to.be.true;
       });
 
       it('should call singular hooks on a singular query', async () => {
-        const {pre, post} = hooks.singular;
+        const { pre, post } = hooks.singular;
         pre.reset();
         post.reset();
 
-        expect(pre.called).to.be.false; // eslint-disable-line
-        expect(post.called).to.be.false; // eslint-disable-line
+        expect(pre.called).to.be.false;
+        expect(post.called).to.be.false;
         await graphql(schema, `{
           user(id: "${user2._id}") {
             _id
           }
         }`);
-        expect(pre.called).to.be.true; // eslint-disable-line
-        expect(post.called).to.be.true; // eslint-disable-line
+        expect(pre.called).to.be.true;
+        expect(post.called).to.be.true;
       });
 
       it('should call plural hooks on a plural query', async () => {
-        const {pre, post} = hooks.plural;
+        const { pre, post } = hooks.plural;
         pre.reset();
         post.reset();
 
-        expect(pre.called).to.be.false; // eslint-disable-line
-        expect(post.called).to.be.false; // eslint-disable-line
+        expect(pre.called).to.be.false;
+        expect(post.called).to.be.false;
         await graphql(schema, `{
           users(age: 28) {
             _id
           }
         }`);
-        expect(pre.called).to.be.true; // eslint-disable-line
-        expect(post.called).to.be.true; // eslint-disable-line
+        expect(pre.called).to.be.true;
+        expect(post.called).to.be.true;
       });
 
       it('should call mutation hooks on a mutation', async () => {
-        const {pre, post} = hooks.mutation;
+        const { pre, post } = hooks.mutation;
         pre.reset();
         post.reset();
 
-        expect(pre.called).to.be.false; // eslint-disable-line
-        expect(post.called).to.be.false; // eslint-disable-line
+        expect(pre.called).to.be.false;
+        expect(post.called).to.be.false;
         await graphql(schema, `
           mutation addUserMutation {
             addUser(input: {name: "Test User", clientMutationId: "1"}) {
@@ -695,8 +710,8 @@ describe('e2e', () => {
             }
           }
         `);
-        expect(pre.called).to.be.true; // eslint-disable-line
-        expect(post.called).to.be.true; // eslint-disable-line
+        expect(pre.called).to.be.true;
+        expect(post.called).to.be.true;
       });
     });
   });

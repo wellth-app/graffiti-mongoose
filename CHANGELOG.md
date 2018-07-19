@@ -1,6 +1,123 @@
+<a name="6.0.0"></a>
+# 6.0.0 (2017-01-27)
+
+
+### chore
+
+* chore(circle): add badge, use yarn ([764eaf5](https://github.com/RisingStack/graffiti-mongoose/commit/764eaf5))
+* chore(circle): use CircleCI ([690b8aa](https://github.com/RisingStack/graffiti-mongoose/commit/690b8aa))
+* chore(package): update dependencies ([75d9085](https://github.com/RisingStack/graffiti-mongoose/commit/75d9085))
+* chore(package): update example dependencies ([9391856](https://github.com/RisingStack/graffiti-mongoose/commit/9391856))
+* chore(package): update lodash to version 4.16.0 (#153) ([0bfcfc0](https://github.com/RisingStack/graffiti-mongoose/commit/0bfcfc0))
+* chore(package): update sinon to version 1.17.6 (#152) ([1d1f6d1](https://github.com/RisingStack/graffiti-mongoose/commit/1d1f6d1))
+
+### fix
+
+* fix(projection): fieldASTs is called fieldNodes ([fced319](https://github.com/RisingStack/graffiti-mongoose/commit/fced319))
+* fix(projection): fix "can't get selectionSet of undefined" error (#204) ([f8edeb9](https://github.com/RisingStack/graffiti-mongoose/commit/f8edeb9)), closes [(#204](https://github.com/(/issues/204)
+
+
+
+<a name="5.3.0"></a>
+# 5.3.0 (2016-09-12)
+
+
+### chore
+
+* chore(package): bump version to 5.3.0 ([a6b98cc](https://github.com/RisingStack/graffiti-mongoose/commit/a6b98cc))
+* chore(package): update babel-cli to version 6.14.0 (#136) ([703be9e](https://github.com/RisingStack/graffiti-mongoose/commit/703be9e))
+* chore(package): update babel-preset-es2015 to version 6.14.0 (#137) ([dc0c28f](https://github.com/RisingStack/graffiti-mongoose/commit/dc0c28f))
+* chore(package): update dependencies ([6df0fe0](https://github.com/RisingStack/graffiti-mongoose/commit/6df0fe0))
+* chore(package): update dependencies ([46e4b48](https://github.com/RisingStack/graffiti-mongoose/commit/46e4b48))
+* chore(package): update dependencies (#134) ([b19ab86](https://github.com/RisingStack/graffiti-mongoose/commit/b19ab86))
+* chore(package): update eslint to version 3.4.0 (#140) ([bc47722](https://github.com/RisingStack/graffiti-mongoose/commit/bc47722))
+* chore(package): update mongoose to version 4.5.10 (#135) ([32ac18e](https://github.com/RisingStack/graffiti-mongoose/commit/32ac18e))
+
+### feat
+
+* feat(schema): pass in types for customQueries and customMutations (#149) ([e6e9d8c](https://github.com/RisingStack/graffiti-mongoose/commit/e6e9d8c))
+
+
+
+<a name="5.2.1"></a>
+## 5.2.1 (2016-08-16)
+
+
+### chore
+
+* chore(package): bump version to 5.2.1 ([d0cf049](https://github.com/RisingStack/graffiti-mongoose/commit/d0cf049))
+
+### docs
+
+* docs(package): update documents ([5b226c8](https://github.com/RisingStack/graffiti-mongoose/commit/5b226c8))
+
+### feat
+
+* feat(example): update example ([33c66e2](https://github.com/RisingStack/graffiti-mongoose/commit/33c66e2))
+
+### fix
+
+* fix(type): fix embedded object reference Type creation (#132) ([436e56e](https://github.com/RisingStack/graffiti-mongoose/commit/436e56e)), closes [(#132](https://github.com/(/issues/132) [#131](https://github.com/RisingStack/graffiti-mongoose/issues/131)
+
+### refactor
+
+* refactor(package): refresh code ([a5b1298](https://github.com/RisingStack/graffiti-mongoose/commit/a5b1298))
+
+
+
+<a name="5.2.0"></a>
+# 5.2.0 (2016-07-26)
+
+
+### chore
+
+* chore(package): bump version to 5.2.0 ([2e4578c](https://github.com/RisingStack/graffiti-mongoose/commit/2e4578c))
+* chore(package): update dependencies ([f726498](https://github.com/RisingStack/graffiti-mongoose/commit/f726498))
+
+### docs
+
+* docs(readme): fix anchor link ([d58b449](https://github.com/RisingStack/graffiti-mongoose/commit/d58b449))
+
+### feat
+
+* feat(schema): allow to use functions for custom mutations and queries to be able to use defined type ([0cb244f](https://github.com/RisingStack/graffiti-mongoose/commit/0cb244f))
+
+
+
+<a name="5.1.0"></a>
+# 5.1.0 (2016-04-30)
+
+
+### chore
+
+* chore(package): bump version ([e64f06a](https://github.com/RisingStack/graffiti-mongoose/commit/e64f06a))
+* chore(package): update dependencies ([8a54912](https://github.com/RisingStack/graffiti-mongoose/commit/8a54912))
+
+### feat
+
+* feat(model): add support for enums ([a0d151a](https://github.com/RisingStack/graffiti-mongoose/commit/a0d151a))
+* feat(model): add support for mongoose embedded schemas ([21e1e31](https://github.com/RisingStack/graffiti-mongoose/commit/21e1e31))
+* feat(schema): add allowMongoIDMutation to options ([5df7147](https://github.com/RisingStack/graffiti-mongoose/commit/5df7147))
+* feat(schema): add customQueries and customMutations to options ([b2b841e](https://github.com/RisingStack/graffiti-mongoose/commit/b2b841e))
+* feat(schema): add support for objects nested in lists ([564cb7c](https://github.com/RisingStack/graffiti-mongoose/commit/564cb7c))
+
+### fix
+
+* fix(type): add to input-object ability for self-nesting ([c28e59e](https://github.com/RisingStack/graffiti-mongoose/commit/c28e59e))
+
+### style
+
+* style(type): using reduce for enum values ([44356a3](https://github.com/RisingStack/graffiti-mongoose/commit/44356a3))
+
+
+
 <a name="5.0.10"></a>
 ## 5.0.10 (2016-03-18)
 
+
+### chore
+
+* chore(package): bump version to 5.0.10 ([a47f729](https://github.com/RisingStack/graffiti-mongoose/commit/a47f729))
 
 ### fix
 

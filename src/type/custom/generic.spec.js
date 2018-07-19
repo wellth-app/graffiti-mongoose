@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import {
   graphql,
   GraphQLSchema,
@@ -35,7 +35,7 @@ describe('GraphQL generic type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ foo }`)
+      await graphql(schema, '{ foo }')
     ).to.deep.equal({
       data: {
         foo: GraphQLGeneric.serialize(unknown)
@@ -59,7 +59,7 @@ describe('GraphQL generic type', () => {
     });
 
     return expect(
-      await graphql(schema, `{ foo }`)
+      await graphql(schema, '{ foo }')
     ).to.deep.equal({
       data: {
         foo: null
@@ -79,7 +79,7 @@ describe('GraphQL generic type', () => {
                 type: GraphQLGeneric
               }
             },
-            resolve: (_, {bar}) => new Unknown(`${bar.field}-qux`)
+            resolve: (_, { bar }) => new Unknown(`${bar.field}-qux`)
           }
         }
       })

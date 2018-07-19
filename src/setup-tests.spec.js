@@ -9,6 +9,8 @@ before((done) => {
   chai.use(sinonChai);
   chai.use(chaiSubset);
 
+  mongoose.Promise = global.Promise;
+
   mongoose.connect('mongodb://localhost/graffiti-mongoose-test', () => {
     mongoose.connection.db.dropDatabase(done);
   });
@@ -20,6 +22,12 @@ before((done) => {
   sinon.stub.returnsWithReject = function returnsWithReject(error) {
     return this.returns(Promise.reject(error));
   };
+});
+
+after((done) => {
+  mongoose.models = {};
+  mongoose.modelSchemas = {};
+  mongoose.connection.close(() => done());
 });
 
 beforeEach(function sandbox() {
